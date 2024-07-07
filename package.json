@@ -3,17 +3,8 @@
 	"displayName": "Toggle Excluded Files",
 	"version": "2.0.0",
 	"description": "Quickly toggles excluded (hidden) files visibility in the file explorer",
-	"categories": [
-		"Other"
-	],
-	"keywords": [
-		"explorer",
-		"files",
-		"hidden",
-		"exclude",
-		"show",
-		"toggle"
-	],
+	"categories": ["Other"],
+	"keywords": ["explorer", "files", "hidden", "exclude", "show", "toggle"],
 	"homepage": "https://github.com/eamodio/vscode-toggle-excluded-files/blob/master/README.md",
 	"bugs": {
 		"url": "https://github.com/eamodio/vscode-toggle-excluded-files/issues"
@@ -94,12 +85,7 @@
 					"toggleexcludedfiles.outputLevel": {
 						"type": "string",
 						"default": "errors",
-						"enum": [
-							"silent",
-							"errors",
-							"verbose",
-							"debug"
-						],
+						"enum": ["silent", "errors", "verbose", "debug"],
 						"enumDescriptions": [
 							"Logs nothing",
 							"Logs only errors",
@@ -145,9 +131,7 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
+	"activationEvents": ["onStartupFinished"],
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/node": "20.14.10",
