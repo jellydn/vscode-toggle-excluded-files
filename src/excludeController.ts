@@ -122,20 +122,19 @@ export class FilesExcludeController implements Disposable {
 
 			// Handle git ignore toggle
 			if (configuration.get('toggleGitIgnore')) {
-				const gitIgnoreState = this.getGitIgnoreConfiguration()
-				if (gitIgnoreState !== undefined) {
-					await this.saveGitIgnoreConfiguration(gitIgnoreState)
-					await this.saveAppliedGitIgnoreConfiguration(false)
-					promises.push(
-						Promise.resolve(
-							configuration.updateAny<CoreConfiguration, boolean>(
-								'explorer.excludeGitIgnore',
-								false,
-								ConfigurationTarget.Workspace,
-							),
+				// Get the current state. Coalesce to `true` as that is the VS Code default, to handle cases where the setting is not explicitly set.
+				const gitIgnoreState = this.getGitIgnoreConfiguration() ?? true
+				await this.saveGitIgnoreConfiguration(gitIgnoreState)
+				await this.saveAppliedGitIgnoreConfiguration(false)
+				promises.push(
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, boolean>(
+							'explorer.excludeGitIgnore',
+							false,
+							ConfigurationTarget.Workspace,
 						),
-					)
-				}
+					),
+				)
 			}
 
 			await this.saveAppliedExcludeConfiguration(appliedExcludes)
@@ -291,7 +290,10 @@ export class FilesExcludeController implements Disposable {
 	get canToggle() {
 		const exclude = this.getExcludeConfiguration()
 		const customExclude = this.getCustomExcludeConfiguration()
-		return (exclude != null && (exclude.globalValue != null || exclude.workspaceValue != null)) || (customExclude != null && customExclude.length > 0)
+		return (
+			(exclude != null && (exclude.globalValue != null || exclude.workspaceValue != null)) ||
+			(customExclude != null && customExclude.length > 0)
+		)
 	}
 
 	get toggled() {
@@ -309,9 +311,7 @@ export class FilesExcludeController implements Disposable {
 
 	private getAppliedExcludeConfiguration(): StoredFilesExcludes | undefined {
 		const storeLocation = configuration.get('storeLocation')
-		return storeLocation === 'user'
-			? this.storage.get('appliedState')
-			: this.storage.getWorkspace('appliedState')
+		return storeLocation === 'user' ? this.storage.get('appliedState') : this.storage.getWorkspace('appliedState')
 	}
 
 	private getExcludeConfiguration(): StoredFilesExcludes | undefined {
@@ -327,7 +327,7 @@ export class FilesExcludeController implements Disposable {
 				globalValue: undefined,
 				workspaceValue: excludeConfig,
 				workspaceFolderValue: undefined,
-				defaultValue: undefined
+				defaultValue: undefined,
 			}
 		}
 		return configuration.inspectAny<CoreConfiguration, Record<string, boolean>>('files.exclude')
@@ -335,9 +335,8 @@ export class FilesExcludeController implements Disposable {
 
 	private getSavedExcludeConfiguration(): StoredFilesExcludes | undefined {
 		const storeLocation = configuration.get('storeLocation')
-		const excludes = storeLocation === 'user'
-			? this.storage.get('savedState')
-			: this.storage.getWorkspace('savedState')
+		const excludes =
+			storeLocation === 'user' ? this.storage.get('savedState') : this.storage.getWorkspace('savedState')
 		this.updateContext(excludes)
 		return excludes
 	}

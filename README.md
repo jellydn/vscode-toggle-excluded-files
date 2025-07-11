@@ -41,3 +41,9 @@ Quickly toggles excluded (hidden) files visibility in the file explorer.
 ## Known Issues
 
 None
+
+## Contributors
+
+- eamodio ([@eamodio](https://github.com/eamodio)) &mdash; [contributions](https://github.com/eamodio/vscode-toggle-excluded-files/commits?author=eamodio)
+- jellydn ([@jellydn](https://github.com/jellydn)) &mdash; [contributions](https://github.com/jellydn/vscode-toggle-excluded-files/commits?author=jellydn)
+- KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk)) &mdash; [contributions](https://github.com/eamodio/vscode-toggle-excluded-files/commits?author=KaiStarkk)
