@@ -33,7 +33,7 @@ export class FilesExcludeController implements Disposable {
 
 	private onAnyConfigurationChanged(e?: ConfigurationChangeEvent) {
 		if (this._working) return
-		if (e != null && !configuration.changedAny(e, ['files.exclude'])) return
+		if (e != null && !configuration.changedAny(e, ['files.exclude', 'explorer.excludeGitIgnore'])) return
 
 		const savedExclude = this.getSavedExcludeConfiguration()
 		if (savedExclude == null) return
@@ -84,7 +84,7 @@ export class FilesExcludeController implements Disposable {
 				// workspaceFolderValue: exclude.workspaceFolderValue == null ? undefined : {},
 			}
 
-			const promises: Thenable<void>[] = []
+			const promises: Promise<unknown>[] = []
 
 			if (exclude.globalValue != null && appliedExcludes.globalValue != null) {
 				const apply: FilesExcludeConfiguration = Object.create(null)
@@ -93,10 +93,12 @@ export class FilesExcludeController implements Disposable {
 				}
 
 				promises.push(
-					configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
-						'files.exclude',
-						apply,
-						ConfigurationTarget.Global,
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
+							'files.exclude',
+							apply,
+							ConfigurationTarget.Global,
+						),
 					),
 				)
 			}
@@ -108,12 +110,32 @@ export class FilesExcludeController implements Disposable {
 				}
 
 				promises.push(
-					configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
-						'files.exclude',
-						apply,
-						ConfigurationTarget.Workspace,
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
+							'files.exclude',
+							apply,
+							ConfigurationTarget.Workspace,
+						),
 					),
 				)
+			}
+
+			// Handle git ignore toggle
+			if (configuration.get('toggleGitIgnore')) {
+				const gitIgnoreState = this.getGitIgnoreConfiguration()
+				if (gitIgnoreState !== undefined) {
+					await this.saveGitIgnoreConfiguration(gitIgnoreState)
+					await this.saveAppliedGitIgnoreConfiguration(false)
+					promises.push(
+						Promise.resolve(
+							configuration.updateAny<CoreConfiguration, boolean>(
+								'explorer.excludeGitIgnore',
+								false,
+								ConfigurationTarget.Workspace,
+							),
+						),
+					)
+				}
 			}
 
 			await this.saveAppliedExcludeConfiguration(appliedExcludes)
@@ -140,26 +162,98 @@ export class FilesExcludeController implements Disposable {
 
 		try {
 			this._working = true
-			const excludes = this.getSavedExcludeConfiguration()
+			const savedExclude = this.getSavedExcludeConfiguration()
+			if (savedExclude == null) return
 
-			const promises: Thenable<void>[] = []
+			const currentExclude = this.getExcludeConfiguration()
+			const promises: Promise<unknown>[] = []
 
-			if (excludes != null) {
-				if (excludes.globalValue != null) {
-					promises.push(
+			const mergedWorkspaceValue = {
+				...(savedExclude.workspaceValue ?? {}),
+				...(currentExclude?.workspaceValue ?? {}),
+			}
+
+			if (Object.keys(mergedWorkspaceValue).length > 0) {
+				promises.push(
+					Promise.resolve(
 						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
 							'files.exclude',
-							excludes.globalValue,
+							mergedWorkspaceValue,
+							ConfigurationTarget.Workspace,
+						),
+					),
+				)
+			} else if (savedExclude.workspaceValue != null) {
+				// Ensures we clear the setting if the merged result is empty
+				promises.push(
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration | undefined>(
+							'files.exclude',
+							undefined,
+							ConfigurationTarget.Workspace,
+						),
+					),
+				)
+			}
+
+			const mergedGlobalValue = {
+				...(savedExclude.globalValue ?? {}),
+				...(currentExclude?.globalValue ?? {}),
+			}
+
+			if (Object.keys(mergedGlobalValue).length > 0) {
+				promises.push(
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
+							'files.exclude',
+							mergedGlobalValue,
 							ConfigurationTarget.Global,
+						),
+					),
+				)
+			} else if (savedExclude.globalValue != null) {
+				// Ensures we clear the setting if the merged result is empty
+				promises.push(
+					Promise.resolve(
+						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration | undefined>(
+							'files.exclude',
+							undefined,
+							ConfigurationTarget.Global,
+						),
+					),
+				)
+			}
+
+			if (savedExclude.workspaceFolderValue != null || currentExclude?.workspaceFolderValue != null) {
+				const mergedWorkspaceFolderValue = {
+					...(savedExclude.workspaceFolderValue ?? {}),
+					...(currentExclude?.workspaceFolderValue ?? {}),
+				}
+
+				if (Object.keys(mergedWorkspaceFolderValue).length > 0) {
+					promises.push(
+						Promise.resolve(
+							configuration.updateAny(
+								'files.exclude',
+								mergedWorkspaceFolderValue,
+								ConfigurationTarget.WorkspaceFolder,
+							),
 						),
 					)
 				}
-				if (excludes.workspaceValue != null) {
+			}
+
+			// Handle git ignore restore
+			if (configuration.get('toggleGitIgnore')) {
+				const savedGitIgnoreState = this.getSavedGitIgnoreConfiguration()
+				if (savedGitIgnoreState !== undefined) {
 					promises.push(
-						configuration.updateAny<CoreConfiguration, FilesExcludeConfiguration>(
-							'files.exclude',
-							excludes.workspaceValue,
-							ConfigurationTarget.Workspace,
+						Promise.resolve(
+							configuration.updateAny<CoreConfiguration, boolean>(
+								'explorer.excludeGitIgnore',
+								savedGitIgnoreState,
+								ConfigurationTarget.Workspace,
+							),
 						),
 					)
 				}
@@ -207,6 +301,10 @@ export class FilesExcludeController implements Disposable {
 	private async clearExcludeConfiguration() {
 		await this.saveAppliedExcludeConfiguration(undefined)
 		await this.saveExcludeConfiguration(undefined)
+		if (configuration.get('toggleGitIgnore')) {
+			await this.saveAppliedGitIgnoreConfiguration(undefined)
+			await this.saveGitIgnoreConfiguration(undefined)
+		}
 	}
 
 	private getAppliedExcludeConfiguration(): StoredFilesExcludes | undefined {
@@ -266,6 +364,38 @@ export class FilesExcludeController implements Disposable {
 	private getCustomExcludeConfiguration(): string[] | null {
 		const customExclude = configuration.get('exclude')
 		return customExclude && customExclude.length > 0 ? customExclude : null
+	}
+
+	private getGitIgnoreConfiguration(): boolean | undefined {
+		return configuration.getAny<'explorer.excludeGitIgnore', boolean>('explorer.excludeGitIgnore')
+	}
+
+	private getSavedGitIgnoreConfiguration(): boolean | undefined {
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.get('savedGitIgnoreState')
+			: this.storage.getWorkspace('savedGitIgnoreState')
+	}
+
+	private saveGitIgnoreConfiguration(value: boolean | undefined): Promise<void> {
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.store('savedGitIgnoreState', value)
+			: this.storage.storeWorkspace('savedGitIgnoreState', value)
+	}
+
+	private getAppliedGitIgnoreConfiguration(): boolean | undefined {
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.get('appliedGitIgnoreState')
+			: this.storage.getWorkspace('appliedGitIgnoreState')
+	}
+
+	private saveAppliedGitIgnoreConfiguration(value: boolean | undefined): Promise<void> {
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.store('appliedGitIgnoreState', value)
+			: this.storage.storeWorkspace('appliedGitIgnoreState', value)
 	}
 
 	private _loaded = false
