@@ -16,6 +16,7 @@ export interface Config {
 		enabled: boolean
 	}
 	storeLocation: 'workspace' | 'user'
+	exclude: string[]
 }
 
 export function fromOutputLevel(level: LogLevel | OutputLevel): LogLevel {

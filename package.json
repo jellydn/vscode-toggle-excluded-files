@@ -105,6 +105,15 @@
 						],
 						"markdownDescription": "Specifies where to store the toggle state - workspace settings are shared with the project, user settings are per-user",
 						"scope": "window"
+					},
+					"toggleexcludedfiles.exclude": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"default": [],
+						"markdownDescription": "Specifies a predefined list of files/folders to exclude when toggling. When this setting is provided, it will be used instead of the current `files.exclude` setting. Useful for devcontainers and shared project configurations.",
+						"scope": "resource"
 					}
 				}
 			}

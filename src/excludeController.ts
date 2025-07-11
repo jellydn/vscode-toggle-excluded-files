@@ -33,7 +33,7 @@ export class FilesExcludeController implements Disposable {
 
 	private onAnyConfigurationChanged(e?: ConfigurationChangeEvent) {
 		if (this._working) return
-		if (e != null && !configuration.changedAny<CoreConfiguration>(e, 'files.exclude')) return
+		if (e != null && !configuration.changedAny(e, ['files.exclude'])) return
 
 		const savedExclude = this.getSavedExcludeConfiguration()
 		if (savedExclude == null) return
@@ -116,15 +116,6 @@ export class FilesExcludeController implements Disposable {
 				)
 			}
 
-			// if (exclude.workspaceFolderValue != null && appliedExclude.workspaceFolderValue != null) {
-			// 	const apply = Object.create(null);
-			// 	for (const key of Object.keys(exclude.workspaceFolderValue)) {
-			// 		appliedExclude.workspaceFolderValue[key] = apply[key] = false;
-			// 	}
-
-			// 	promises.push(configuration.updateAny(this._section, apply, ConfigurationTarget.WorkspaceFolder));
-			// }
-
 			await this.saveAppliedExcludeConfiguration(appliedExcludes)
 
 			if (!promises.length) return
@@ -205,7 +196,8 @@ export class FilesExcludeController implements Disposable {
 
 	get canToggle() {
 		const exclude = this.getExcludeConfiguration()
-		return exclude != null && (exclude.globalValue != null || exclude.workspaceValue != null)
+		const customExclude = this.getCustomExcludeConfiguration()
+		return (exclude != null && (exclude.globalValue != null || exclude.workspaceValue != null)) || (customExclude != null && customExclude.length > 0)
 	}
 
 	get toggled() {
@@ -225,6 +217,21 @@ export class FilesExcludeController implements Disposable {
 	}
 
 	private getExcludeConfiguration(): StoredFilesExcludes | undefined {
+		const customExclude = this.getCustomExcludeConfiguration()
+		if (customExclude) {
+			// Create a synthetic StoredFilesExcludes from the custom exclude list
+			const excludeConfig: FilesExcludeConfiguration = {}
+			customExclude.forEach(pattern => {
+				excludeConfig[pattern] = true
+			})
+			return {
+				key: 'files.exclude',
+				globalValue: undefined,
+				workspaceValue: excludeConfig,
+				workspaceFolderValue: undefined,
+				defaultValue: undefined
+			}
+		}
 		return configuration.inspectAny<CoreConfiguration, Record<string, boolean>>('files.exclude')
 	}
 
@@ -254,6 +261,11 @@ export class FilesExcludeController implements Disposable {
 		return storeLocation === 'user'
 			? this.storage.store('savedState', excludes)
 			: this.storage.storeWorkspace('savedState', excludes)
+	}
+
+	private getCustomExcludeConfiguration(): string[] | null {
+		const customExclude = configuration.get('exclude')
+		return customExclude && customExclude.length > 0 ? customExclude : null
 	}
 
 	private _loaded = false
