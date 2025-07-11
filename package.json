@@ -95,6 +95,12 @@
 						"markdownDescription": "Specifies how much (if any) output will be sent to the _Toggle Excluded_ output channel",
 						"scope": "window"
 					},
+					"toggleexcludedfiles.toggleGitIgnore": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Specifies whether to also toggle `explorer.excludeGitIgnore` when toggling excluded files",
+						"scope": "window"
+					},
 					"toggleexcludedfiles.storeLocation": {
 						"type": "string",
 						"default": "workspace",

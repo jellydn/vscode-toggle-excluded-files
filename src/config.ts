@@ -15,6 +15,7 @@ export interface Config {
 	statusBar: {
 		enabled: boolean
 	}
+	toggleGitIgnore: boolean
 	storeLocation: 'workspace' | 'user'
 	exclude: string[]
 }
