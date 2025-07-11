@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Added
+
+- Adds `toggleexcludedfiles.storeLocation` setting to store toggle state in user settings &mdash; closes #47, thanks to [PR #<pr>](...) by KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk))
+- Adds `toggleexcludedfiles.exclude` setting for predefined exclude lists, useful for devcontainers &mdash; closes #43, thanks to [PR #<pr>](...) by KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk))
+- Adds `toggleexcludedfiles.toggleGitIgnore` setting to also toggle `explorer.excludeGitIgnore` &mdash; closes #50, thanks to [PR #<pr>](...) by KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk))
+
+### Changed
+
+- Merges current `files.exclude` settings when restoring to prevent losing manual changes
+
+### Fixed
+
+- Fixes #22, toggle state is now persisted when closing VS Code &mdash; thanks to [PR #<pr>](...) by KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk))
+- Fixes #46, status bar icon will now update when any related configuration is changed &mdash; thanks to [PR #<pr>](...) by KaiStarkk ([@KaiStarkk](https://github.com/KaiStarkk))
+
+
 ## [2.0.0] - 2023-03-05
 
 ### Added

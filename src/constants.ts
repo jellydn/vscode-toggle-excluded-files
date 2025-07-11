@@ -18,19 +18,26 @@ export type ContextKeys = `${typeof extensionPrefix}:loaded` | `${typeof extensi
 
 export type CoreCommands = 'vscode.open' | 'setContext'
 
-export type CoreConfiguration = 'files.exclude'
+export type CoreConfiguration = 'files.exclude' | 'explorer.excludeGitIgnore'
 
 export type SecretKeys = never
 
 export type DeprecatedGlobalStorage = object
 
-export type GlobalStorage = object
+export type GlobalStorage = {
+	appliedState?: StoredFilesExcludes
+	savedState?: StoredFilesExcludes
+	appliedGitIgnoreState?: boolean | undefined
+	savedGitIgnoreState?: boolean | undefined
+}
 
 export type DeprecatedWorkspaceStorage = object
 
 export type WorkspaceStorage = {
 	appliedState: StoredFilesExcludes
 	savedState: StoredFilesExcludes
+	appliedGitIgnoreState: boolean | undefined
+	savedGitIgnoreState: boolean | undefined
 }
 
 type ConfigInspect<T> = ReturnType<typeof configuration.inspectAny<CoreConfiguration, T>>

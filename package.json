@@ -94,6 +94,32 @@
 						],
 						"markdownDescription": "Specifies how much (if any) output will be sent to the _Toggle Excluded_ output channel",
 						"scope": "window"
+					},
+					"toggleexcludedfiles.toggleGitIgnore": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Specifies whether to also toggle `explorer.excludeGitIgnore` when toggling excluded files",
+						"scope": "window"
+					},
+					"toggleexcludedfiles.storeLocation": {
+						"type": "string",
+						"default": "workspace",
+						"enum": ["workspace", "user"],
+						"enumDescriptions": [
+							"Store toggle state in workspace settings",
+							"Store toggle state in user settings"
+						],
+						"markdownDescription": "Specifies where to store the toggle state - workspace settings are shared with the project, user settings are per-user",
+						"scope": "window"
+					},
+					"toggleexcludedfiles.exclude": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"default": [],
+						"markdownDescription": "Specifies a predefined list of files/folders to exclude when toggling. When this setting is provided, it will be used instead of the current `files.exclude` setting. Useful for devcontainers and shared project configurations.",
+						"scope": "resource"
 					}
 				}
 			}

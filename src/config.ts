@@ -15,6 +15,9 @@ export interface Config {
 	statusBar: {
 		enabled: boolean
 	}
+	toggleGitIgnore: boolean
+	storeLocation: 'workspace' | 'user'
+	exclude: string[]
 }
 
 export function fromOutputLevel(level: LogLevel | OutputLevel): LogLevel {

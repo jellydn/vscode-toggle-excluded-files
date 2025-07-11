@@ -27,7 +27,10 @@ export class StatusBarController implements Disposable {
 		if (
 			e == null ||
 			configuration.changed(e, 'statusBar.enabled') ||
-			configuration.changedAny<CoreConfiguration>(e, 'files.exclude')
+			configuration.changed(e, 'exclude') ||
+			configuration.changed(e, 'toggleGitIgnore') ||
+			configuration.changed(e, 'storeLocation') ||
+			configuration.changedAny(e, ['files.exclude', 'explorer.excludeGitIgnore'])
 		) {
 			this._statusBarItem?.dispose()
 
