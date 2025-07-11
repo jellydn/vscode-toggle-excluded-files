@@ -94,6 +94,17 @@
 						],
 						"markdownDescription": "Specifies how much (if any) output will be sent to the _Toggle Excluded_ output channel",
 						"scope": "window"
+					},
+					"toggleexcludedfiles.storeLocation": {
+						"type": "string",
+						"default": "workspace",
+						"enum": ["workspace", "user"],
+						"enumDescriptions": [
+							"Store toggle state in workspace settings",
+							"Store toggle state in user settings"
+						],
+						"markdownDescription": "Specifies where to store the toggle state - workspace settings are shared with the project, user settings are per-user",
+						"scope": "window"
 					}
 				}
 			}

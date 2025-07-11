@@ -15,6 +15,7 @@ export interface Config {
 	statusBar: {
 		enabled: boolean
 	}
+	storeLocation: 'workspace' | 'user'
 }
 
 export function fromOutputLevel(level: LogLevel | OutputLevel): LogLevel {

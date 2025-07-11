@@ -218,7 +218,10 @@ export class FilesExcludeController implements Disposable {
 	}
 
 	private getAppliedExcludeConfiguration(): StoredFilesExcludes | undefined {
-		return this.storage.getWorkspace('appliedState')
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.get('appliedState')
+			: this.storage.getWorkspace('appliedState')
 	}
 
 	private getExcludeConfiguration(): StoredFilesExcludes | undefined {
@@ -226,7 +229,10 @@ export class FilesExcludeController implements Disposable {
 	}
 
 	private getSavedExcludeConfiguration(): StoredFilesExcludes | undefined {
-		const excludes = this.storage.getWorkspace('savedState')
+		const storeLocation = configuration.get('storeLocation')
+		const excludes = storeLocation === 'user'
+			? this.storage.get('savedState')
+			: this.storage.getWorkspace('savedState')
 		this.updateContext(excludes)
 		return excludes
 	}
@@ -236,12 +242,18 @@ export class FilesExcludeController implements Disposable {
 	}
 
 	private saveAppliedExcludeConfiguration(excludes: StoredFilesExcludes | undefined): Promise<void> {
-		return this.storage.storeWorkspace('appliedState', excludes)
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.store('appliedState', excludes)
+			: this.storage.storeWorkspace('appliedState', excludes)
 	}
 
 	private saveExcludeConfiguration(excludes: StoredFilesExcludes | undefined): Promise<void> {
 		this.updateContext(excludes)
-		return this.storage.storeWorkspace('savedState', excludes)
+		const storeLocation = configuration.get('storeLocation')
+		return storeLocation === 'user'
+			? this.storage.store('savedState', excludes)
+			: this.storage.storeWorkspace('savedState', excludes)
 	}
 
 	private _loaded = false

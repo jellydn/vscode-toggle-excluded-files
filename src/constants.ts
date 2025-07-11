@@ -24,7 +24,10 @@ export type SecretKeys = never
 
 export type DeprecatedGlobalStorage = object
 
-export type GlobalStorage = object
+export type GlobalStorage = {
+	appliedState?: StoredFilesExcludes
+	savedState?: StoredFilesExcludes
+}
 
 export type DeprecatedWorkspaceStorage = object
 
